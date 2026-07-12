@@ -36,11 +36,14 @@ KM_PER_MS = 100.0
 DATES = ['2026-06-12', '2026-06-28', '2026-07-08']
 DAYS = {'2026-06-12': 0, '2026-06-28': 16, '2026-07-08': 26}
 
-E.N_SOURCES = 40
-E.N_TARGETS = 30
-E.POOL = 400
-E.MIN_TGT_COV = 8
-E.COVERAGE_CAP = 100
+# Full anchor mesh, global, split src/dst (same methodology as scale_split).
+E.REGION = (-90.0, 90.0, -180.0, 180.0)
+E.MIN_SRC_DIST_KM = 0.0
+E.N_SOURCES = 350
+E.N_TARGETS = 500
+E.POOL = 1000
+E.MIN_TGT_COV = 20
+E.COVERAGE_CAP = 10000
 
 
 def snap_rtt(meas):
@@ -124,7 +127,7 @@ def mean_err(mesh, est):
 
 def main():
     mesh = E.load_submesh()                 # anchors/targets from the 07-08 canonical mesh
-    fiber = make_gridded_fiber(mesh, res_deg=0.25, slope=1.3)
+    fiber = make_gridded_fiber(mesh, res_deg=0.5, slope=1.3)   # global grid
     snaps = {d: pickle.load(open(f'cache/real_mini_mesh_{d}.pkl', 'rb'))['loc_loc_meas']
              for d in DATES}
     task_pairs = mesh['task_edges']

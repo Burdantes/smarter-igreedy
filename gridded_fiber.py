@@ -24,6 +24,17 @@ from utils import get_distance
 KM_PER_MS = 100.0
 
 
+def _hav_point_to_vps(lat, lon, vlat, vlon):
+    """Great-circle km from one point to an array of VP coords."""
+    R = 6371.0
+    p1 = np.radians(lat)
+    p2 = np.radians(vlat)
+    dphi = np.radians(vlat - lat)
+    dl = np.radians(vlon - lon)
+    a = np.sin(dphi / 2) ** 2 + np.cos(p1) * np.cos(p2) * np.sin(dl / 2) ** 2
+    return 2.0 * R * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
+
+
 class GriddedFiberRtt:
     def __init__(self, estimator, vp_locs, bounds, res_deg=0.25, slope=1.3):
         self.slope = float(slope)
@@ -35,12 +46,18 @@ class GriddedFiberRtt:
         self.lats = np.arange(la0, la1 + res_deg, res_deg)
         self.lons = np.arange(lo0, lo1 + res_deg, res_deg)
         nla, nlo, nvp = len(self.lats), len(self.lons), len(self.vp_locs)
+        vlat = np.array([v[0] for v in self.vp_locs])
+        vlon = np.array([v[1] for v in self.vp_locs])
         g = np.empty((nla, nlo, nvp), dtype=float)
         for i in range(nla):
             for j in range(nlo):
-                f = np.asarray(estimator.floor_ms(float(self.lats[i]),
-                                                  float(self.lons[j])), dtype=float)
-                g[i, j] = np.where(np.isfinite(f), f, self.BIG)
+                la, lo = float(self.lats[i]), float(self.lons[j])
+                f = np.asarray(estimator.floor_ms(la, lo), dtype=float)
+                # Unreachable cells: fill with the geodesic floor (the project's
+                # OPEN fallback) rather than a sentinel, so interpolation across
+                # coastlines stays smooth and never leaks huge values.
+                geo = _hav_point_to_vps(la, lo, vlat, vlon) / KM_PER_MS
+                g[i, j] = np.where(np.isfinite(f), f, geo)
         self.grid = g
 
     BIG = 1e9
@@ -54,8 +71,13 @@ class GriddedFiberRtt:
         fy = float(np.clip(fi - i, 0.0, 1.0))
         fx = float(np.clip(fj - j, 0.0, 1.0))
         g = self.grid
-        return (g[i, j] * (1 - fx) * (1 - fy) + g[i, j + 1] * fx * (1 - fy)
-                + g[i + 1, j] * (1 - fx) * fy + g[i + 1, j + 1] * fx * fy)
+        c00, c01, c10, c11 = g[i, j], g[i, j + 1], g[i + 1, j], g[i + 1, j + 1]
+        val = (c00 * (1 - fx) * (1 - fy) + c01 * fx * (1 - fy)
+               + c10 * (1 - fx) * fy + c11 * fx * fy)
+        # Don't interpolate across an unreachable (BIG) cell — that leaks huge
+        # values; fall back to geodesic there (handled by base_ms via >=1e8).
+        big = (c00 >= 1e8) | (c01 >= 1e8) | (c10 >= 1e8) | (c11 >= 1e8)
+        return np.where(big, self.BIG, val)
 
     def base_ms(self, vp_loc, loc):
         v = self.vp_idx[(round(vp_loc[0], 6), round(vp_loc[1], 6))]

@@ -39,13 +39,21 @@ from utils import get_distance
 
 KM_PER_MS = 100.0
 
-E.N_SOURCES = 60
-E.N_TARGETS = 15
+# GEODESIC-only demo of the feedback loop. Model-guided greedy needs a
+# per-target incremental estimator; under the geodesic base it is stable, and
+# this is where the "confidently wrong" pathology lives (a biased base). The
+# fiber "good base => greedy fine" point is covered by the batch scale_split
+# result. Regional (Europe) src/dst split, triangulation regime.
+E.REGION = (36.0, 60.0, -10.0, 28.0)
+E.MIN_SRC_DIST_KM = 250.0
+E.N_SOURCES = 50
+E.N_TARGETS = 25
 E.POOL = 400
-E.MIN_TGT_COV = 8
-E.COVERAGE_CAP = 100
+E.MIN_TGT_COV = 15
+E.COVERAGE_CAP = 10000
 
-RTT_MODEL = None       # set to the gridded fiber model in main()
+CAND_CAP = 9999        # geodesic is cheap -> score all candidates (stable)
+RTT_MODEL = None       # geodesic base for this demo
 
 
 def base_ms(a_loc, b_loc):
@@ -101,10 +109,13 @@ def region_km(mesh, t, est, rtts, ms, mt, vs, vt):
     return (np.sqrt(nwr / nw) + 1.0 / np.sqrt(nw)) * KM_PER_MS
 
 
-def greedy_pick(mesh, t, est, rtts, ms, mt, vs, vt, avail):
+def greedy_pick(mesh, t, est, rtts, ms, mt, vs, vt, avail, rng=None):
     """Model-guided choice: the anchor whose PREDICTED reading (RTT from the
     current biased model at the current estimate) most shrinks t's reported
-    region. This is the feedback loop — selection optimises the model's belief."""
+    region. This is the feedback loop — selection optimises the model's belief.
+    Candidates are capped at CAND_CAP (random subset) for tractability."""
+    if rng is not None and len(avail) > CAND_CAP:
+        avail = list(rng.choice(avail, size=CAND_CAP, replace=False))
     src_loc = mesh['src_loc']
     cur = [(s, r) for (s, d), rs in rtts.items() if d == t for r in rs]
     cur_rows = [(src_loc[s], r, ms.get(s, 0) + mt.get(t, 0),
@@ -165,7 +176,7 @@ def run(mesh, seed, budget, mode, audit_frac=0.0, refit_every=10):
             if mode == 'random':
                 a = avail[rng.integers(len(avail))]
             else:
-                a = greedy_pick(mesh, t, est, rtts, ms, mt, vs, vt, avail)
+                a = greedy_pick(mesh, t, est, rtts, ms, mt, vs, vt, avail, rng=rng)
             rtts.setdefault((a, t), []).append(mesh['rtt'](a, t)); pinged[t].add(a)
         spent += 1
         if spent % refit_every == 0:
@@ -194,42 +205,34 @@ def run_arms(mesh, seeds, budget, refit_every):
 
 def main():
     global RTT_MODEL
+    RTT_MODEL = None                       # geodesic (biased) base
     mesh = E.load_submesh()
-    fiber = make_gridded_fiber(mesh, res_deg=0.25, slope=1.3)
-    seeds = [0, 1]
+    seeds = [0, 1, 2]
     budget = 500
     refit_every = 20
 
-    print("=== GEODESIC (biased) base ===")
-    RTT_MODEL = None
-    geo = run_arms(mesh, seeds, budget, refit_every)
-    print("=== FIBER (good) base ===")
-    RTT_MODEL = fiber
-    fib = run_arms(mesh, seeds, budget, refit_every)
+    print(f"submesh: {len(mesh['sources'])} sources x {len(mesh['targets'])} targets (geodesic base)")
+    res = run_arms(mesh, seeds, budget, refit_every)
 
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     C = {'random': '#6a994e', 'greedy': '#d1495b', 'greedy+audit': '#2e86ab'}
-    fig, ax = plt.subplots(2, 2, figsize=(13.5, 8.6), sharex=True)
+    fig, (aT, aG) = plt.subplots(2, 1, figsize=(9, 8.4), sharex=True)
 
-    for col, (label, res) in enumerate([('GEODESIC (biased) base', geo),
-                                        ('FIBER (good) base', fib)]):
-        aT, aG = ax[0][col], ax[1][col]
-        for name, (steps, true, rep) in res.items():
-            aT.plot(steps, true, '-o', color=C[name], lw=2.2, ms=3, label=f'{name} TRUE')
-            aT.plot(steps, rep, '--', color=C[name], lw=1.3, alpha=.8, label=f'{name} REPORTED')
-            aG.plot(steps, np.array(true) - np.array(rep), '-o', color=C[name], lw=2.2, ms=3, label=name)
-        aT.set_title(label); aT.grid(alpha=0.25); aT.legend(frameon=False, fontsize=7.5, ncol=2)
-        aG.axhline(0, color='k', lw=0.6); aG.grid(alpha=0.25); aG.legend(frameon=False, fontsize=8.5)
-        aG.set_xlabel('total pings')
-        if col == 0:
-            aT.set_ylabel('TRUE error (solid) /\nREPORTED unc. (dashed), km')
-            aG.set_ylabel('overconfidence gap\nTRUE − REPORTED (km)')
+    for name, (steps, true, rep) in res.items():
+        aT.plot(steps, true, '-o', color=C[name], lw=2.3, ms=4, label=f'{name} — TRUE error')
+        aT.plot(steps, rep, '--', color=C[name], lw=1.4, alpha=.8, label=f'{name} — REPORTED')
+        aG.plot(steps, np.array(true) - np.array(rep), '-o', color=C[name], lw=2.3, ms=4, label=name)
+    aT.set_ylabel('km'); aT.grid(alpha=0.25); aT.legend(frameon=False, fontsize=9, ncol=1)
+    aT.set_title('A  True error (solid) vs reported uncertainty (dashed)')
+    aG.axhline(0, color='k', lw=0.6); aG.grid(alpha=0.25); aG.legend(frameon=False, fontsize=10)
+    aG.set_xlabel('total pings'); aG.set_ylabel('overconfidence gap: TRUE − REPORTED (km)')
+    aG.set_title('B  Overconfidence gap (higher = more confidently wrong)')
 
-    fig.suptitle('Model-guided feedback loop — the pathology depends on model bias.  '
-                 'Biased base: greedy confidently wrong, audit helps.  '
-                 'Good base: greedy beneficial, audit not needed.', fontsize=11.5, y=1.0)
+    fig.suptitle('Model-guided feedback loop (biased geodesic base): greedy selection '
+                 'confirms its own\nestimate — confidently wrong; audits break the loop',
+                 fontsize=11.5, y=1.0)
     fig.tight_layout()
     os.makedirs('figures', exist_ok=True)
     out = 'figures/feedback_loop.pdf'

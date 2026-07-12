@@ -29,12 +29,13 @@ from iterative_greedy_geolocator import Iterative_Greedy_Geolocator
 from feasible_region_maintainer import ADDITIVE
 from utils import get_distance
 
-# Regional src/dst split, triangulation regime.
-E.REGION = (36.0, 60.0, -10.0, 28.0)
-E.MIN_SRC_DIST_KM = 250.0
-E.N_SOURCES = 60
-E.N_TARGETS = 40
-E.POOL = 400
+# src/dst split from the anchor mesh. Counts overridable via argv: <n_src> <n_dst>.
+# Global, no min-distance exclusion => use the full anchor mesh (all-pairs).
+E.REGION = (-90.0, 90.0, -180.0, 180.0)
+E.MIN_SRC_DIST_KM = 0.0
+E.N_SOURCES = int(sys.argv[1]) if len(sys.argv) > 1 else 60
+E.N_TARGETS = int(sys.argv[2]) if len(sys.argv) > 2 else 40
+E.POOL = E.N_SOURCES + E.N_TARGETS + 300
 E.MIN_TGT_COV = 15
 E.COVERAGE_CAP = 10000
 
@@ -72,8 +73,9 @@ def main():
     mesh = E.load_submesh()
     data = build_data(mesh)
     seeds = [0, 1, 2]
-    budgets = [200, 400, 600, 800, 1000, 1200]
-    print(f"{len(mesh['sources'])} sources x {len(mesh['targets'])} targets")
+    nt = len(mesh['targets'])
+    budgets = [p * nt for p in (8, 16, 25, 40)]   # pings-per-target grid
+    print(f"{len(mesh['sources'])} sources x {nt} targets; budgets {budgets}")
 
     # random baselines (averaged over seeds) via the batch estimator
     def rand_sweep(rtt_model):
@@ -104,7 +106,7 @@ def main():
     ax.legend(frameon=False, fontsize=9); ax.grid(alpha=0.25)
     fig.tight_layout()
     os.makedirs('figures', exist_ok=True)
-    out = 'figures/greedy_scale.pdf'
+    out = f"figures/greedy_scale_{len(mesh['sources'])}x{nt}.pdf"
     fig.savefig(out, bbox_inches='tight'); fig.savefig(out.replace('.pdf', '.png'), dpi=140, bbox_inches='tight')
     print(f"wrote {out}")
     print("\nbudget | nn   | rand_add | greedy_geo | greedy_fib")

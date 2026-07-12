@@ -25,14 +25,16 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 import experiment_audit_vs_task_real as E
 from gridded_fiber import make_gridded_fiber
 
-# ALL anchors: global, no min-distance exclusion; split src/dst from the
-# dense mesh (top-degree nodes are the ~880-node anchoring mesh).
+# Split src/dst from the anchor mesh (global, all-pairs). Counts overridable
+# via argv: <n_src> <n_dst> [min_tgt_cov].  A low min_tgt_cov pulls in the
+# sparse edge-probe tail as targets (e.g. 1000 dst from 50 sources).
+import sys as _sys
 E.REGION = (-90.0, 90.0, -180.0, 180.0)
 E.MIN_SRC_DIST_KM = 0.0
-E.N_SOURCES = 350
-E.N_TARGETS = 500
-E.POOL = 1000
-E.MIN_TGT_COV = 20
+E.N_SOURCES = int(_sys.argv[1]) if len(_sys.argv) > 1 else 350
+E.N_TARGETS = int(_sys.argv[2]) if len(_sys.argv) > 2 else 500
+E.MIN_TGT_COV = int(_sys.argv[3]) if len(_sys.argv) > 3 else 20
+E.POOL = E.N_SOURCES + E.N_TARGETS + 400
 E.COVERAGE_CAP = 10000
 
 
@@ -41,12 +43,13 @@ def main():
     fiber = make_gridded_fiber(mesh, res_deg=0.5, slope=1.3)   # global grid
     fiber_seeds = list(range(2))
     seeds = list(range(3))
-    budgets = [2000, 4000, 6000, 9000, 12000, 15000]
+    nt = len(mesh['targets'])
+    budgets = [p * nt for p in (5, 10, 15, 20, 30)]      # pings-per-target grid
     fractions = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
-    alloc_budget = 9000
+    alloc_budget = 15 * nt
 
-    print(f"submesh: {len(mesh['sources'])} sources x {len(mesh['targets'])} targets, "
-          f"{len(mesh['task_edges'])} pairs")
+    print(f"submesh: {len(mesh['sources'])} sources x {nt} targets, "
+          f"{len(mesh['task_edges'])} pairs; budgets {budgets}")
     print("geodesic budget sweep...")
     geo = E.budget_sweep(mesh, seeds, budgets, audit_fraction=0.3, rtt_model=None)
     print("fiber budget sweep...")
@@ -94,7 +97,7 @@ def main():
                  fontsize=13, y=1.0)
     fig.tight_layout()
     os.makedirs('figures', exist_ok=True)
-    out = 'figures/scale_split.pdf'
+    out = f"figures/scale_split_{len(mesh['sources'])}x{nt}.pdf"
     fig.savefig(out, bbox_inches='tight'); fig.savefig(out.replace('.pdf', '.png'), dpi=140, bbox_inches='tight')
     print(f"wrote {out}")
 

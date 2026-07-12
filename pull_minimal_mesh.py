@@ -26,6 +26,15 @@ def main():
     pipe = RipeAtlasPipeline(start_date=date, end_date=date, max_workers=2)
     d = datetime.strptime(date, "%Y-%m-%d")
 
+    # Probe LOCATIONS are ~static (and some archive dates 404), so pin the
+    # probe metadata to a fixed available date for every snapshot. This is used
+    # during parsing (prb_id -> address/subnet) too, so it must be set first.
+    from pull_ripe_atlas_probe_data import RipeAtlasProbePipeline
+    META_DATE = os.environ.get("META_DATE", "2026-07-08")
+    pm = RipeAtlasProbePipeline(start_date=META_DATE, end_date=META_DATE)
+    pipe.probe_metadata = pm.export_latest_probes()
+    print(f"using probe metadata from {META_DATE}: {len(pipe.probe_metadata)} probes")
+
     # Download + parse only the requested hours (not all 24).
     for h in hours:
         raw = pipe.download_dump((d, h))
@@ -44,9 +53,10 @@ def main():
     }
     print(f"probes with location: {len(address_to_loc)}")
 
+    # Merge ONLY this date's summaries (parsed_dir is shared across dates).
     meas, floor_cache = {}, {}
-    for fn in tqdm.tqdm(glob.glob(os.path.join(pipe.parsed_dir, "*_summary.json")),
-                        desc="merging summaries"):
+    pat = os.path.join(pipe.parsed_dir, f"ping-{date}T*_summary.json")
+    for fn in tqdm.tqdm(glob.glob(pat), desc="merging summaries"):
         with open(fn) as f:
             hourly = json.load(f)
         for src, dsts in hourly.items():
@@ -71,7 +81,7 @@ def main():
     print(f"mesh: {len(meas)} sources, {len(nodes)} nodes, {edges} directed edges")
 
     os.makedirs("cache", exist_ok=True)
-    out = "cache/real_mini_mesh.pkl"
+    out = f"cache/real_mini_mesh_{date}.pkl"
     with open(out, "wb") as f:
         pickle.dump({'address_to_loc': {k: v for k, v in address_to_loc.items()
                                         if k in nodes},

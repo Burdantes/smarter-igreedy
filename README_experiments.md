@@ -164,6 +164,37 @@ The other real-data scripts import this module and override these globals:
 
 ---
 
+## Demonstrating the effect (feedback loop, drift, scale)
+
+Later experiments probe *when auditing the model actually pays* and use a fast
+fiber model.
+
+- `gridded_fiber.py` — **GriddedFiberRtt**, a drop-in for FiberFloorRtt that
+  precomputes the floor on a lat/lon grid and bilinearly interpolates
+  (~1000x faster per call, mean error 0.012 ms vs exact). Use this for any
+  fiber run at scale.
+- `experiment_feedback_loop.py` → `feedback_loop.pdf` — model-guided GREEDY
+  selection vs random, geodesic vs fiber base. Shows the feedback loop:
+  under a **biased (geodesic)** base, greedy is *confidently wrong* and
+  audits help; under a **good (fiber)** base, greedy is *beneficial* and
+  audits are not needed. (Greedy is per-candidate expensive, so this runs on
+  a modest submesh.)
+- `experiment_drift.py` → `drift.pdf` — three real snapshots 26 days apart
+  (`pull_minimal_mesh.py <date> 0 1` for each of 2026-06-12/-06-28/-07-08),
+  frozen vs audit-refresh vs task-refresh anchor offsets. Result: geolocation
+  is **robust to 26-day drift** — a frozen model does not degrade (drift
+  averages out over many anchors + per-target recalibration).
+- `experiment_scale_split.py` → `scale_split.pdf` — the full run: split the
+  dense anchor mesh into 350 sources x 500 targets (global, all-pairs) and
+  compare NN, task/audit x geodesic/fiber over a budget sweep + audit
+  allocation.
+
+**Unified finding across all of these:** the base model (fiber) is the lever;
+**auditing per-node offsets never pays on real anchor data** (optimal audit
+share ~0%); model-based triangulation beats NN in the sparse/budget-limited
+regime, NN wins once coverage is dense; auditing only helps when the base
+model itself is biased/underspecified (the geodesic feedback-loop panel).
+
 ## How many targets are available?
 
 The mesh has ~11,570 nodes, but it's the RIPE **anchoring mesh**: ~880 nodes are

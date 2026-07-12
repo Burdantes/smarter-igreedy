@@ -188,6 +188,13 @@ fiber model.
   dense anchor mesh into 350 sources x 500 targets (global, all-pairs) and
   compare NN, task/audit x geodesic/fiber over a budget sweep + audit
   allocation.
+- `experiment_greedy_scale.py` → `greedy_scale.pdf` — the **robust** greedy vs
+  random comparison, using the project's real `Iterative_Greedy_Geolocator`
+  (batch region-based, not the fragile incremental harness). 60 src x 40 dst,
+  geodesic and fiber. Result: greedy has a startup cost (worse than NN/random
+  at low budget), but GREEDY + fiber is the best strategy at sufficient budget
+  (465 vs NN 626 km at b=1200); geodesic greedy ≈ random+additive. Must be run
+  as a script (multiprocessing).
 
 **Unified finding across all of these:** the base model (fiber) is the lever;
 **auditing per-node offsets never pays on real anchor data** (optimal audit

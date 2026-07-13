@@ -9,6 +9,15 @@ subgraph. Output: cache/real_mini_mesh.pkl  {'address_to_loc', 'loc_loc_meas'}.
 
 Usage:  python pull_minimal_mesh.py 2026-07-08 0 1 2   # date, then hours
 """
+# --- path bootstrap (moved into recursive_bed/): make repo-root modules,
+# internet_gmaps, and relative data/figure paths resolve regardless of CWD ---
+import os as _os, sys as _sys
+_ROOT = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+_sys.path.insert(0, _os.path.join(_ROOT, 'internet_gmaps'))
+_sys.path.insert(0, _ROOT)
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+_os.chdir(_ROOT)
+# --- end bootstrap ---
 import os, sys, glob, json, pickle
 from datetime import datetime
 import numpy as np

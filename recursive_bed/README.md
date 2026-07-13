@@ -1,5 +1,11 @@
 # Audit-vs-task measurement experiments
 
+> **Results summary: see [`RESULTS.md`](RESULTS.md).** Key figures are in [`plots/`](plots/). Scripts live in this folder and are run from the repo root (or anywhere — each script chdir's to the repo root):
+> ```bash
+> python recursive_bed/experiment_scarce_vp.py 12 40
+> ```
+
+
 These scripts explore one question for IP geolocation under a ping budget:
 
 > Given a limited number of pings, should you spend them **locating the target**
@@ -62,7 +68,7 @@ Run everything from the repo root.
 ## Step 0 — pull the real RIPE Atlas mesh (once)
 
 ```bash
-python pull_minimal_mesh.py 2026-07-08 0 1     # date, then hour indices
+python recursive_bed/pull_minimal_mesh.py 2026-07-08 0 1     # date, then hour indices
 ```
 
 - Downloads a **couple of ~2.1 GB hourly ping dumps** from RIPE's public data
@@ -90,20 +96,20 @@ Outputs land in `figures/` (PDF + PNG) unless noted. Fiber runs are slow
 
 | Script | Data | Run | Output | What it shows |
 |---|---|---|---|---|
-| `experiment_audit_vs_task.py` | synthetic | `python experiment_audit_vs_task.py` | `audit_vs_task.pdf` | **The mechanism working.** A controlled world where the dominant error is a per-node offset → audits break the plateau, overconfidence gap, optimal ~30% audit. |
-| `experiment_audit_vs_task_real.py` | mesh | `python experiment_audit_vs_task_real.py` | `audit_vs_task_real.pdf` | Real data, geodesic base. Auditing does NOT pay (optimal 0%); NN is strong. Also the **module that defines the submesh + sweep functions the others import.** |
-| `experiment_audit_vs_task_fiber.py` | mesh + fiber | `python experiment_audit_vs_task_fiber.py` | `audit_vs_task_fiber.pdf` | Geodesic vs fiber base. **Fiber breaks the plateau & beats NN**; audits still 0%. |
-| `experiment_audit_value_200.py` | mesh | `python experiment_audit_value_200.py` | `audit_vs_task_real_n200.pdf` | Hardens the 0%-audit result at **200 targets**, geodesic. |
-| `experiment_audit_value_all.py` | mesh + fiber | `python experiment_audit_value_all.py` | `audit_vs_task_all_n200.pdf` | **All five categories** (NN, task/audit × geodesic/fiber) at 200 targets. The definitive comparison. |
-| `experiment_scenario_100x150.py` | mesh + fiber | `python experiment_scenario_100x150.py [BUDGET] [TARGETS]` | `scenario_100x<ntgt>_b<budget>.pdf` | Concrete "100 anchors, N targets, B pings" audit-fraction sweep. Defaults: `10000 150`. Examples run: `10000 150` (dense, ~67 anchors/tgt), `900 150` (sparse, ~6/tgt), `14000 700` (→355 targets selected). |
+| `experiment_audit_vs_task.py` | synthetic | `python recursive_bed/experiment_audit_vs_task.py` | `audit_vs_task.pdf` | **The mechanism working.** A controlled world where the dominant error is a per-node offset → audits break the plateau, overconfidence gap, optimal ~30% audit. |
+| `experiment_audit_vs_task_real.py` | mesh | `python recursive_bed/experiment_audit_vs_task_real.py` | `audit_vs_task_real.pdf` | Real data, geodesic base. Auditing does NOT pay (optimal 0%); NN is strong. Also the **module that defines the submesh + sweep functions the others import.** |
+| `experiment_audit_vs_task_fiber.py` | mesh + fiber | `python recursive_bed/experiment_audit_vs_task_fiber.py` | `audit_vs_task_fiber.pdf` | Geodesic vs fiber base. **Fiber breaks the plateau & beats NN**; audits still 0%. |
+| `experiment_audit_value_200.py` | mesh | `python recursive_bed/experiment_audit_value_200.py` | `audit_vs_task_real_n200.pdf` | Hardens the 0%-audit result at **200 targets**, geodesic. |
+| `experiment_audit_value_all.py` | mesh + fiber | `python recursive_bed/experiment_audit_value_all.py` | `audit_vs_task_all_n200.pdf` | **All five categories** (NN, task/audit × geodesic/fiber) at 200 targets. The definitive comparison. |
+| `experiment_scenario_100x150.py` | mesh + fiber | `python recursive_bed/experiment_scenario_100x150.py [BUDGET] [TARGETS]` | `scenario_100x<ntgt>_b<budget>.pdf` | Concrete "100 anchors, N targets, B pings" audit-fraction sweep. Defaults: `10000 150`. Examples run: `10000 150` (dense, ~67 anchors/tgt), `900 150` (sparse, ~6/tgt), `14000 700` (→355 targets selected). |
 
 ### Visual explainers
 
 | Script | Data | Run | Output | What it shows |
 |---|---|---|---|---|
-| `experiment_geoloc_animation.py` | synthetic | `python experiment_geoloc_animation.py` | `geoloc_animation.gif` | Idealized trilateration: with a correct model, adding vantage points tightens the feasible region and the MAP estimate beats nearest-neighbor. |
-| `experiment_polygon_animation.py` | mesh + fiber | `python experiment_polygon_animation.py` | `polygon_animation.gif` | Real target, 25 sources: classical **speed-of-light polygon (CBG) centroid**, geodesic circle vs **fiber isochrone**, next to NN and MAP, with error-vs-#sources. |
-| `generate_model_report.py` | mesh + fiber | `python generate_model_report.py` | `model_report.html` | **Interactive HTML.** Browse each source/target node: fitted parameters (μ = per-node overhead, σ = noise), the measurements + residuals behind them, and (for targets) a map thumbnail of true vs estimated location. Toggle geodesic/fiber base. Open in a browser. |
+| `experiment_geoloc_animation.py` | synthetic | `python recursive_bed/experiment_geoloc_animation.py` | `geoloc_animation.gif` | Idealized trilateration: with a correct model, adding vantage points tightens the feasible region and the MAP estimate beats nearest-neighbor. |
+| `experiment_polygon_animation.py` | mesh + fiber | `python recursive_bed/experiment_polygon_animation.py` | `polygon_animation.gif` | Real target, 25 sources: classical **speed-of-light polygon (CBG) centroid**, geodesic circle vs **fiber isochrone**, next to NN and MAP, with error-vs-#sources. |
+| `generate_model_report.py` | mesh + fiber | `python recursive_bed/generate_model_report.py` | `model_report.html` | **Interactive HTML.** Browse each source/target node: fitted parameters (μ = per-node overhead, σ = noise), the measurements + residuals behind them, and (for targets) a map thumbnail of true vs estimated location. Toggle geodesic/fiber base. Open in a browser. |
 
 ---
 

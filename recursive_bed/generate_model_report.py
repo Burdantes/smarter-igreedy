@@ -14,6 +14,15 @@ Both the geodesic and fiber fits are embedded; a toggle switches between them.
 Output: model_report.html  (open in a browser)
 """
 from __future__ import annotations
+# --- path bootstrap (moved into recursive_bed/): make repo-root modules,
+# internet_gmaps, and relative data/figure paths resolve regardless of CWD ---
+import os as _os, sys as _sys
+_ROOT = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+_sys.path.insert(0, _os.path.join(_ROOT, 'internet_gmaps'))
+_sys.path.insert(0, _ROOT)
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+_os.chdir(_ROOT)
+# --- end bootstrap ---
 
 import os
 import sys

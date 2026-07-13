@@ -117,8 +117,8 @@ def main():
     fig.suptitle('Audit value at scale — 200 real IPs, all categories (geodesic & fiber)',
                  fontsize=13, y=1.02)
     fig.tight_layout()
-    os.makedirs('figures', exist_ok=True)
-    out = 'figures/audit_vs_task_all_n200.pdf'
+    os.makedirs('figures/real_audit', exist_ok=True)
+    out = 'figures/real_audit/audit_vs_task_all_n200.pdf'
     fig.savefig(out, bbox_inches='tight')
     fig.savefig(out.replace('.pdf', '.png'), dpi=140, bbox_inches='tight')
     print(f"wrote {out}")

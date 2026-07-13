@@ -399,8 +399,8 @@ def main():
     fig.suptitle('Audit vs. task measurement — recursive Bayesian experimental '
                  'design in geolocation', fontsize=13, y=1.02)
     fig.tight_layout()
-    os.makedirs('figures', exist_ok=True)
-    out = 'figures/audit_vs_task.pdf'
+    os.makedirs('figures/mechanism', exist_ok=True)
+    out = 'figures/mechanism/audit_vs_task.pdf'
     fig.savefig(out, bbox_inches='tight')
     fig.savefig(out.replace('.pdf', '.png'), dpi=140, bbox_inches='tight')
     print(f"wrote {out}")

@@ -114,8 +114,8 @@ def main():
                  f"{len(mesh['targets'])} dst")
     ax.legend(frameon=False, fontsize=9); ax.grid(alpha=0.25)
     fig.tight_layout()
-    os.makedirs('figures', exist_ok=True)
-    out = f"figures/greedy_scale_{len(mesh['sources'])}x{nt}.pdf"
+    os.makedirs('figures/scale', exist_ok=True)
+    out = f"figures/scale/greedy_scale_{len(mesh['sources'])}x{nt}.pdf"
     fig.savefig(out, bbox_inches='tight'); fig.savefig(out.replace('.pdf', '.png'), dpi=140, bbox_inches='tight')
     print(f"wrote {out}")
     print("\nbudget | nn   | rand_add | greedy_geo | greedy_fib")

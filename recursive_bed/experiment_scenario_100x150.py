@@ -122,8 +122,8 @@ def main():
     ax.legend(frameon=False, fontsize=9, ncol=2)
     ax.grid(alpha=0.25)
     fig.tight_layout()
-    os.makedirs('figures', exist_ok=True)
-    out = f'figures/scenario_100x{ntgt}_b{BUDGET}.pdf'
+    os.makedirs('figures/scale', exist_ok=True)
+    out = f'figures/scale/scenario_100x{ntgt}_b{BUDGET}.pdf'
     fig.savefig(out, bbox_inches='tight'); fig.savefig(out.replace('.pdf', '.png'), dpi=140, bbox_inches='tight')
     print(f"wrote {out}")
 

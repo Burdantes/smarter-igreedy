@@ -105,8 +105,8 @@ def main():
     fig.suptitle('Full anchor mesh split src/dst — how strategies perform at scale',
                  fontsize=13, y=1.0)
     fig.tight_layout()
-    os.makedirs('figures', exist_ok=True)
-    out = f"figures/scale_split_{len(mesh['sources'])}x{nt}.pdf"
+    os.makedirs('figures/scale', exist_ok=True)
+    out = f"figures/scale/scale_split_{len(mesh['sources'])}x{nt}.pdf"
     fig.savefig(out, bbox_inches='tight'); fig.savefig(out.replace('.pdf', '.png'), dpi=140, bbox_inches='tight')
     print(f"wrote {out}")
 

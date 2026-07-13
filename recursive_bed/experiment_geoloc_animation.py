@@ -185,8 +185,8 @@ def main():
 
     seq = list(range(K)) + [K - 1] * 4
     anim = FuncAnimation(fig, draw, frames=seq, interval=600)
-    os.makedirs('figures', exist_ok=True)
-    out = 'figures/geoloc_animation.gif'
+    os.makedirs('figures/animations', exist_ok=True)
+    out = 'figures/animations/geoloc_animation.gif'
     anim.save(out, writer=PillowWriter(fps=2))
     print(f"wrote {out}  ({K} sources)")
     print("k | min-RTT |  NN err | MAP err")

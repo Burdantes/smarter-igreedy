@@ -156,8 +156,8 @@ def main():
     fig.suptitle('Audit vs. task on REAL data — the lever is the base MODEL '
                  '(fiber floor), not runtime VP–VP audit pings', fontsize=12.5, y=1.02)
     fig.tight_layout()
-    os.makedirs('figures', exist_ok=True)
-    out = 'figures/audit_vs_task_fiber.pdf'
+    os.makedirs('figures/real_audit', exist_ok=True)
+    out = 'figures/real_audit/audit_vs_task_fiber.pdf'
     fig.savefig(out, bbox_inches='tight')
     fig.savefig(out.replace('.pdf', '.png'), dpi=140, bbox_inches='tight')
     print(f"wrote {out}")

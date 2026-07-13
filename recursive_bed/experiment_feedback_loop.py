@@ -243,8 +243,8 @@ def main():
                  'confirms its own\nestimate — confidently wrong; audits break the loop',
                  fontsize=11.5, y=1.0)
     fig.tight_layout()
-    os.makedirs('figures', exist_ok=True)
-    out = 'figures/feedback_loop.pdf'
+    os.makedirs('figures/dynamics', exist_ok=True)
+    out = 'figures/dynamics/feedback_loop.pdf'
     fig.savefig(out, bbox_inches='tight'); fig.savefig(out.replace('.pdf', '.png'), dpi=140, bbox_inches='tight')
     print(f"wrote {out}")
 

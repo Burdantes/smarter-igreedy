@@ -4,6 +4,10 @@
 > ```bash
 > python recursive_bed/experiment_scarce_vp.py 12 40
 > ```
+> Scripts write outputs to **`figures/<theme>/`** (`mechanism/`, `real_audit/`,
+> `scale/`, `dynamics/`, `animations/`), mirroring the curated committed copies
+> in [`plots/`](plots/). (`figures/` is gitignored raw output; `plots/` is the
+> committed set.)
 
 
 These scripts explore one question for IP geolocation under a ping budget:

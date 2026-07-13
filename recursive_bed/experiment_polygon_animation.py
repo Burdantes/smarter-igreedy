@@ -206,8 +206,8 @@ def main():
 
     seq = list(range(K)) + [K - 1] * 4
     anim = FuncAnimation(fig, draw, frames=seq, interval=600)
-    os.makedirs('figures', exist_ok=True)
-    out = 'figures/polygon_animation.gif'
+    os.makedirs('figures/animations', exist_ok=True)
+    out = 'figures/animations/polygon_animation.gif'
     anim.save(out, writer=PillowWriter(fps=2))
     print(f"wrote {out}  (target {t_star}, {K} sources)")
     print("k |  NN  | cen_geo | cen_fib | MAP_geo | MAP_fib")

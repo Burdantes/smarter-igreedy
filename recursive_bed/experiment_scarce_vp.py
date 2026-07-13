@@ -257,8 +257,8 @@ def main():
                  f'cov {covs.min()}-{covs.max()}) — does auditing pay?')
     ax.legend(frameon=False, fontsize=10); ax.grid(alpha=0.25)
     fig.tight_layout()
-    os.makedirs('figures', exist_ok=True)
-    out = f'figures/scarce_vp_{len(vps)}vp.pdf'
+    os.makedirs('figures/dynamics', exist_ok=True)
+    out = f'figures/dynamics/scarce_vp_{len(vps)}vp.pdf'
     fig.savefig(out, bbox_inches='tight'); fig.savefig(out.replace('.pdf', '.png'), dpi=140, bbox_inches='tight')
     print(f"wrote {out}")
     print("geodesic:", {int(f*100): round(v) for f, v in zip(fractions, res['geodesic'])})

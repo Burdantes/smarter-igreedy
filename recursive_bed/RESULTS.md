@@ -53,7 +53,7 @@ auditable per-node offsets are *already pinned* by task pings via pooling.
 A controlled world where the dominant error is a large, under-identified
 per-node offset. **Audits win: optimal audit share ~30%**, task-only plateaus,
 overconfidence gap opens. Proves the tradeoff is real when its precondition holds.
-→ `plots/audit_vs_task.png`
+→ `plots/mechanism/audit_vs_task.png`
 
 ### B. Real data, auditing doesn't pay — `experiment_audit_vs_task_real.py`, `_fiber.py`, `_value_200.py`, `_value_all.py`
 - Geodesic base: audits never pay; **NN is strong**; optimal audit share 0%.
@@ -61,13 +61,13 @@ overconfidence gap opens. Proves the tradeoff is real when its precondition hold
 - Hardened at **200 targets** and across all categories (NN, task/audit ×
   geodesic/fiber): fiber best (task-only fiber 493 vs NN 626 km at b=1600);
   audit share 0% under both bases.
-→ `plots/audit_vs_task_real.png`, `_fiber.png`, `audit_vs_task_all_n200.png`
+→ `plots/real_audit/audit_vs_task_real.png`, `_fiber.png`, `audit_vs_task_all_n200.png`
 
 ### C. Full anchor mesh, split src/dst — `experiment_scale_split.py`
 350 src × 500 dst (global, all-pairs). Fiber > geodesic; audit 0%-optimal for
 both bases; NN vs model is coverage-dependent (fiber model wins at moderate
 coverage, NN at dense).
-→ `plots/scale_split_350x500.png` (and `scale_split_50x919.png`, the
+→ `plots/scale/scale_split_350x500.png` (and `scale_split_50x919.png`, the
 sparse-source run)
 
 ### D. Concrete scenarios — `experiment_scenario_100x150.py`
@@ -75,14 +75,14 @@ sparse-source run)
 wash-to-slightly-negative; fiber base −22% mean error. At 900 pings (~6
 anchors/target) the geodesic model is *worse* than NN (misspecified
 triangulation with few rings); fiber rescues it.
-→ `plots/scenario_100x150_b10000.png`, `scenario_100x150_b900.png`
+→ `plots/scale/scenario_100x150_b10000.png`, `scenario_100x150_b900.png`
 
 ### E. Robust greedy vs random — `experiment_greedy_scale.py`
 Uses the project's real `Iterative_Greedy_Geolocator` (batch, region-based).
 Greedy has a startup cost (worse than NN/random at low budget), but
 **greedy + fiber is best at sufficient budget** (465 vs NN 626 km at b=1200);
 geodesic greedy only ties random+additive.
-→ `plots/greedy_scale_60x40.png`
+→ `plots/scale/greedy_scale_60x40.png`
 
 ### F. The feedback loop (confidently wrong) — `experiment_feedback_loop.py`
 Model-guided greedy on a **biased (geodesic)** base is *confidently wrong* —
@@ -90,14 +90,14 @@ widest overconfidence gap (true 1288 / reported 714 vs random 1257 / 800), and
 **audits break the loop** (true error → 1116). The pathology is *bias-dependent*:
 with a good base, greedy is beneficial and audits aren't needed. (Geodesic-only,
 regional — the incremental greedy estimator is unreliable under the fiber base.)
-→ `plots/feedback_loop.png`
+→ `plots/dynamics/feedback_loop.png`
 
 ### G. Model drift over 26 days — `experiment_drift.py`
 Three real snapshots (2026-06-12, -06-28, -07-08), ~5.9 ms mean |ΔRTT| at 26
 days. **Geolocation is robust to drift**: a frozen model does *not* degrade
 (945 → 967 km over 26 days) — redundant coverage + per-target recalibration wash
 it out. So "keep auditing because the model goes stale" doesn't bite here.
-→ `plots/drift.png`
+→ `plots/dynamics/drift.png`
 
 ### H. Scarce VPs + sparse targets — `experiment_scarce_vp.py`
 The regime where auditing *should* pay. Tested 10–12 VPs × 30–300 targets.
@@ -106,12 +106,12 @@ The regime where auditing *should* pay. Tested 10–12 VPs × 30–300 targets.
 with 3 seeds were **seed noise**. Structural reason: no regime has offsets
 simultaneously (a) binding, (b) unpooled by task pings, (c) geometrically
 resolvable. Fiber still ~36% better than geodesic.
-→ `plots/scarce_vp_12vp.png`
+→ `plots/dynamics/scarce_vp_12vp.png`
 
 ### Visual explainers
-- `experiment_geoloc_animation.py` → `plots/geoloc_animation.gif` — idealized
+- `experiment_geoloc_animation.py` → `plots/animations/geoloc_animation.gif` — idealized
   trilateration (correct model): feasible region tightens, MAP beats NN.
-- `experiment_polygon_animation.py` → `plots/polygon_animation.gif` — classical
+- `experiment_polygon_animation.py` → `plots/animations/polygon_animation.gif` — classical
   speed-of-light (CBG) polygon centroid, geodesic circle vs fiber isochrone.
 - `generate_model_report.py` → `model_report.html` — interactive per-node view
   of the fitted additive model (parameters + the measurements behind them +

@@ -26,9 +26,18 @@ file is the summary of what we found.
 Auditing pays **iff** three conditions hold simultaneously: (1) model
 uncertainty dominates the answer's error, (2) the *audited component* is the
 uncertain part, and (3) the audit reduces it more cheaply than task pings.
-Geolocation violates (2)+(3): the reducible error is *structural* (the
+Geolocation *usually* violates (2)+(3): the reducible error is *structural* (the
 distance→latency map, fixed by external fiber data — not pings), and the
 auditable per-node offsets are *already pinned* by task pings via pooling.
+
+**The one real-data regime where auditing does pay (§I):** clustered sources +
+a few *far* targets (one-sided geometry). There a large, shared, region-specific
+long-haul overhead is (a) binding, (b) unpooled by the few targets, and (c)
+unresolvable by the degenerate geometry — so under a *biased* base the far
+targets are placed *confidently wrong* (~8,000–10,000 km off), and an audit to a
+known landmark in the region rescues them (−16 to −20% in 3 of 4 regions). Even
+here the **fiber base avoids the pathology entirely** (4–10× better, no audit
+needed) — so the base model is still the bigger lever.
 
 ---
 
@@ -107,6 +116,21 @@ with 3 seeds were **seed noise**. Structural reason: no regime has offsets
 simultaneously (a) binding, (b) unpooled by task pings, (c) geometrically
 resolvable. Fiber still ~36% better than geodesic.
 → `plots/dynamics/scarce_vp_12vp.png`
+
+### I. Far targets — the regime where auditing pays — `experiment_far_targets.py`
+Clustered sources (25 European anchors) geolocating a few targets in a distant
+region (E. Asia / S. America / W. US / Oceania). Far targets have **one-sided
+geometry** and a **large shared long-haul overhead** (~63–142 ms beyond
+speed-of-light; std across targets only 7–28 ms → strongly shared). With few
+targets this term can't be pooled, and the geometry can't resolve it, so under
+the **geodesic base** the targets are **confidently wrong** (~8,000–10,000 km).
+**Auditing a known landmark in the region rescues it** (−16 to −20%) in E. Asia,
+S. America, W. US; Oceania didn't hit the catastrophe so audit only cost task
+budget there. The **fiber base** avoids the pathology (806–2485 km, audit
+neutral). This is the clearest real-data demonstration of the paper's core
+"confidently-wrong → audit-fixes-it" thesis — and it still shows the base model
+is the bigger lever.
+→ `plots/scale/far_targets_summary.png` (+ per-region `far_targets_<region>.png`)
 
 ### Visual explainers
 - `experiment_geoloc_animation.py` → `plots/animations/geoloc_animation.gif` — idealized

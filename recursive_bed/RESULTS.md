@@ -33,11 +33,15 @@ auditable per-node offsets are *already pinned* by task pings via pooling.
 **The one real-data regime where auditing does pay (§I):** clustered sources +
 a few *far* targets (one-sided geometry). There a large, shared, region-specific
 long-haul overhead is (a) binding, (b) unpooled by the few targets, and (c)
-unresolvable by the degenerate geometry — so under a *biased* base the far
-targets are placed *confidently wrong* (~8,000–10,000 km off), and an audit to a
-known landmark in the region rescues them (−16 to −20% in 3 of 4 regions). Even
-here the **fiber base avoids the pathology entirely** (4–10× better, no audit
-needed) — so the base model is still the bigger lever.
+unresolvable by the degenerate geometry — so under a *biased* (geodesic) base an
+audit to a known landmark in the region gives a **small but statistically
+significant** improvement (150-trial CIs: ~4–11%, +175 to +822 km; significant
+for S.America / W.US / Oceania, borderline for E.Asia; persists across 3–30
+targets). But the far-target errors are huge either way (4,000–9,500 km), and
+the **fiber base is 4–10× better (806–2,485 km) and needs no audit** — so the
+base model is still, by far, the bigger lever. (Early single-seed runs showed a
+dramatic ~−18% "rescue"; that was noise — the honest effect is the modest,
+CI-backed one above.)
 
 ---
 
@@ -117,20 +121,25 @@ simultaneously (a) binding, (b) unpooled by task pings, (c) geometrically
 resolvable. Fiber still ~36% better than geodesic.
 → `plots/dynamics/scarce_vp_12vp.png`
 
-### I. Far targets — the regime where auditing pays — `experiment_far_targets.py`
+### I. Far targets — the regime where auditing pays (modestly) — `experiment_far_targets.py`, `experiment_far_targets_robust.py`
 Clustered sources (25 European anchors) geolocating a few targets in a distant
 region (E. Asia / S. America / W. US / Oceania). Far targets have **one-sided
 geometry** and a **large shared long-haul overhead** (~63–142 ms beyond
 speed-of-light; std across targets only 7–28 ms → strongly shared). With few
 targets this term can't be pooled, and the geometry can't resolve it, so under
-the **geodesic base** the targets are **confidently wrong** (~8,000–10,000 km).
-**Auditing a known landmark in the region rescues it** (−16 to −20%) in E. Asia,
-S. America, W. US; Oceania didn't hit the catastrophe so audit only cost task
-budget there. The **fiber base** avoids the pathology (806–2485 km, audit
-neutral). This is the clearest real-data demonstration of the paper's core
-"confidently-wrong → audit-fixes-it" thesis — and it still shows the base model
-is the bigger lever.
-→ `plots/scale/far_targets_summary.png` (+ per-region `far_targets_<region>.png`)
+the **geodesic base** the targets are **confidently wrong** (~4,000–9,500 km),
+and **auditing a known landmark in the region helps a small but statistically
+significant amount** — 150-trial 95% CIs: E.Asia +424 (borderline), S.America
++655, W.US +822, Oceania +175 km (~4–11%); the benefit persists across 3–30
+targets/region. The **fiber base avoids the pathology** (806–2485 km, audit
+neutral), 4–10× better. So this is the clearest real-data instance of the
+"confidently-wrong → audit-helps" thesis, but even here the base model is the
+bigger lever.
+**Method note:** the effect is only visible with enough trials — single-seed /
+≤60-trial runs (and a `PYTHONHASHSEED` non-determinism) gave a spurious dramatic
+~−18% "rescue" that was noise; the honest, CI-backed effect is the modest one
+above. Run with `PYTHONHASHSEED=0` for reproducibility.
+→ `plots/scale/far_targets_robust.png` (150-trial CIs + target-count sweep)
 
 ### Visual explainers
 - `experiment_geoloc_animation.py` → `plots/animations/geoloc_animation.gif` — idealized

@@ -16,6 +16,13 @@ Latest results: `.claude/FIBER_GEOLOCATOR_RESULTS.md` (fiber-floor
 integration + scaling runs); atlas research agenda:
 `.claude/HANDOFF_routing_realism.md`; open items: `.claude/TODOS.md`.
 
+**Recursive-BED study (task vs. audit measurement):** `recursive_bed/` holds a
+self-contained study of whether to spend pings *locating the target* vs.
+*auditing the latency model*. Verdict: the base model (fiber floor) is the
+lever; auditing per-node offsets ≈ never pays for geolocation — it's the
+disciplining/boundary case for the framework. Summary: `recursive_bed/RESULTS.md`;
+how-to: `recursive_bed/README.md`; figures: `recursive_bed/plots/`.
+
 ---
 
 ## Data pipeline
